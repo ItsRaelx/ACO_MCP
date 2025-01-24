@@ -1,7 +1,9 @@
+
 import java.io.*;
 import java.util.*;
 
 public class AntColonyCliqueSolver {
+
     private int vertices;
     private boolean[][] adjacencyMatrix;
     private double[][] pheromones;
@@ -21,7 +23,7 @@ public class AntColonyCliqueSolver {
         initializePheromones();
     }
 
-    private void readDIMACSFile(String filename) throws IOException {
+    /*private void readDIMACSFile(String filename) throws IOException {
         try (FileInputStream fis = new FileInputStream(filename)) {
             byte[] header = new byte[337];
             fis.read(header);
@@ -47,7 +49,36 @@ public class AntColonyCliqueSolver {
                 }
             }
         }
-    }
+    }*/
+	private void readDIMACSFile(String filename) throws IOException {
+		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+			String line;
+			// Skip file size line
+			reader.readLine();
+			
+			// Read until we find the problem line
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("p")) {
+					String[] parts = line.trim().split("\\s+");
+					vertices = Integer.parseInt(parts[2]);
+					adjacencyMatrix = new boolean[vertices][vertices];
+					pheromones = new double[vertices][vertices];
+					break;
+				}
+			}
+			
+			// Read the binary adjacency matrix
+			for (int i = 0; i < vertices; i++) {
+				for (int j = 0; j < vertices; j++) {
+					int value = reader.read();
+					if (value == 1) {
+						adjacencyMatrix[i][j] = true;
+						adjacencyMatrix[j][i] = true;
+					}
+				}
+			}
+		}
+	}
 
     private void initializePheromones() {
         for (int i = 0; i < vertices; i++) {
@@ -86,7 +117,7 @@ public class AntColonyCliqueSolver {
         Set<Integer> candidates = new HashSet<>();
 
         // Initialize candidates with all vertices
-        for(int i = 0; i < vertices; i++) {
+        for (int i = 0; i < vertices; i++) {
             candidates.add(i);
         }
 
@@ -103,7 +134,9 @@ public class AntColonyCliqueSolver {
 
         while (!candidates.isEmpty()) {
             int nextVertex = selectNextVertex(clique, candidates);
-            if (nextVertex == -1) break;
+            if (nextVertex == -1) {
+                break;
+            }
 
             clique.add(nextVertex);
 
@@ -121,7 +154,9 @@ public class AntColonyCliqueSolver {
     }
 
     private int selectNextVertex(Set<Integer> clique, Set<Integer> candidates) {
-        if (candidates.isEmpty()) return -1;
+        if (candidates.isEmpty()) {
+            return -1;
+        }
 
         // Calculate probabilities for each candidate
         double[] probabilities = new double[vertices];
@@ -131,8 +166,8 @@ public class AntColonyCliqueSolver {
             double pheromoneScore = calculatePheromoneScore(candidate, clique);
             double heuristicScore = calculateHeuristicScore(candidate, candidates);
 
-            probabilities[candidate] = Math.pow(pheromoneScore, ALPHA) *
-                    Math.pow(heuristicScore, BETA);
+            probabilities[candidate] = Math.pow(pheromoneScore, ALPHA)
+                    * Math.pow(heuristicScore, BETA);
             totalProbability += probabilities[candidate];
         }
 
@@ -150,24 +185,34 @@ public class AntColonyCliqueSolver {
         return candidates.iterator().next();
     }
 
-    private double calculatePheromoneScore(int vertex, Set<Integer> clique) {
+    /*private double calculatePheromoneScore(int vertex, Set<Integer> clique) {
         double score = 0;
         for (int v : clique) {
             score += pheromones[vertex][v];
         }
         return score;
-    }
+    }*/
+	private double calculatePheromoneScore(int vertex, Set<Integer> clique) {
+		if (clique.isEmpty()) return 1.0;
+		double score = 0;
+		for (int v : clique) {
+			score += pheromones[vertex][v];
+		}
+		return score / clique.size(); // Średnia zamiast sumy
+	}
 
     private int getHighestDegreeVertex(Set<Integer> vertices) {
         int maxDegree = -1;
         int bestVertex = vertices.iterator().next();
 
-        for(int v : vertices) {
+        for (int v : vertices) {
             int degree = 0;
-            for(int u = 0; u < this.vertices; u++) {
-                if(adjacencyMatrix[v][u]) degree++;
+            for (int u = 0; u < this.vertices; u++) {
+                if (adjacencyMatrix[v][u]) {
+                    degree++;
+                }
             }
-            if(degree > maxDegree) {
+            if (degree > maxDegree) {
                 maxDegree = degree;
                 bestVertex = v;
             }
@@ -215,7 +260,8 @@ public class AntColonyCliqueSolver {
 
         // Deposit pheromone for best solution
         Set<Integer> bestClique = antCliques.get(bestIndex);
-        double deposit = 1.0 / (1.0 + scores.length - scores[bestIndex]);
+        /*double deposit = 1.0 / (1.0 + scores.length - scores[bestIndex]);*/
+		double deposit = 1.0 + scores[bestIndex];
 
         for (int i : bestClique) {
             for (int j : bestClique) {
@@ -229,17 +275,36 @@ public class AntColonyCliqueSolver {
         }
     }
 
+    public static double precyzja(double liczba, int miejscaPoPrz) {
+        double mnoznik = 1.0;
+		for(int i=0; i<miejscaPoPrz; i++) {
+			mnoznik*=10.0;
+		}
+        return (double) ((int) (liczba * mnoznik)) / mnoznik;
+    }
+
     public static void main(String[] args) {
-        try {
-            AntColonyCliqueSolver solver = new AntColonyCliqueSolver("c-fat500-10.clq.b");
-            Set<Integer> maxClique = solver.findMaximumClique();
+        Integer optymalneRozw[] = {12, 24, 58, 14, 26, 64, 126};
+        String files[] = {"c-fat200-1.clq.b", "c-fat200-2.clq.b", "c-fat200-5.clq.b", "c-fat500-1.clq.b", "c-fat500-2.clq.b", "c-fat500-5.clq.b", "c-fat500-10.clq.b"};
 
-            System.out.println("Maximum clique size: " + maxClique.size());
-            System.out.println("Vertices in maximum clique: " + maxClique);
+        for (int i = 0; i < files.length; i++) {
+            String fileName = files[i];
+            Integer optRozw = optymalneRozw[i];
+            String path = "problemy\\" + fileName;
 
-        } catch (IOException e) {
-            System.err.println("Error reading file: " + e.getMessage());
-            e.printStackTrace();
+            try {
+                AntColonyCliqueSolver solver = new AntColonyCliqueSolver(path);
+                Set<Integer> maxClique = solver.findMaximumClique();
+				System.out.println("\nReading file: "+fileName);
+
+                System.out.println("Maximum clique size: " + maxClique.size() + " (" + precyzja((double) maxClique.size() / (double) optRozw, 3) * 100 + "% of optimal)");
+                System.out.println("Vertices in maximum clique: " + maxClique);
+
+            } catch (IOException e) {
+                System.err.println("Error reading file: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
+
     }
 }
