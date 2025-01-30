@@ -150,7 +150,7 @@ public class SimpleACOClique {
         for (int i = 0; i < g.vertices; i++) {
             for (int j = 0; j < g.vertices; j++) {
                 pheromone[i][j] *= EVAPORATION;
-                pheromone[i][j] = Math.max(pheromone[i][j], 0.01);
+                pheromone[i][j] = Math.max(pheromone[i][j], 0.01);	// Min. wartość feromonu
             }
         }
     }
