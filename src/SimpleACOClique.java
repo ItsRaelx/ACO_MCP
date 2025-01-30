@@ -5,7 +5,7 @@ public class SimpleACOClique {
     // ======================
     // ADJUSTABLE PARAMETERS
     // ======================
-    private static final String FILE_PATH = "./problemy/c-fat200-1.clq.b";
+    private static final String FILE_PATH = "./problemy/c-fat200-2.clq.b";
     private static final int MAX_CYCLES = 100;
     private static final int NUM_ANTS = 20;
     private static final double EVAPORATION = 0.5;
@@ -18,22 +18,21 @@ public class SimpleACOClique {
     static class Graph {
         int vertices;
         boolean[][] edges;
-        int edgeCount; // Add this field
+        int edgeCount;
 
         public Graph(int n) {
             vertices = n;
-            edges = new boolean[n + 1][n + 1];
-            edgeCount = 0; // Initialize edge count
+            edges = new boolean[n][n];
+            edgeCount = 0;
         }
 
         void addEdge(int u, int v) {
-            if (!edges[u][v]) { // Check to avoid counting duplicate edges
+            if (!edges[u][v]) {
                 edges[u][v] = edges[v][u] = true;
-                edgeCount++; // Increment edge count
+                edgeCount++;
             }
         }
 
-        // Add this method
         int edgeCount() {
             return edgeCount;
         }
@@ -127,10 +126,7 @@ public class SimpleACOClique {
                     boolean hasEdge = (rowBytes[byteIndex] & mask) != 0;
 
                     if (hasEdge) {
-                        // Adjust indices if your Graph class is 1-based
-                        int nodeA = i + 1;
-                        int nodeB = j + 1;
-                        graph.addEdge(nodeA, nodeB);
+                        graph.addEdge(i, j);
                     }
                 }
             }
@@ -141,9 +137,9 @@ public class SimpleACOClique {
     }
 
     private static double[][] initPheromones(Graph g) {
-        double[][] pheromone = new double[g.vertices + 1][g.vertices + 1];
-        for (int i = 1; i <= g.vertices; i++) {
-            for (int j = 1; j <= g.vertices; j++) {
+        double[][] pheromone = new double[g.vertices][g.vertices];
+        for (int i = 0; i < g.vertices; i++) {
+            for (int j = 0; j < g.vertices; j++) {
                 pheromone[i][j] = INIT_PHEROMONE;
             }
         }
@@ -151,8 +147,8 @@ public class SimpleACOClique {
     }
 
     private static void evaporatePheromones(Graph g, double[][] pheromone) {
-        for (int i = 1; i <= g.vertices; i++) {
-            for (int j = 1; j <= g.vertices; j++) {
+        for (int i = 0; i < g.vertices; i++) {
+            for (int j = 0; j < g.vertices; j++) {
                 pheromone[i][j] *= EVAPORATION;
                 pheromone[i][j] = Math.max(pheromone[i][j], 0.01);
             }
@@ -163,13 +159,13 @@ public class SimpleACOClique {
         List<Integer> clique = new ArrayList<>();
         List<Integer> candidates = new ArrayList<>();
 
-        int start = rand.nextInt(g.vertices) + 1;
+        int start = rand.nextInt(g.vertices);
         clique.add(start);
 
         // Debug output
         //System.out.println("Starting with node: " + start);
 
-        for (int v = 1; v <= g.vertices; v++) {
+        for (int v = 0; v < g.vertices; v++) {
             if (v != start && g.edges[start][v]) {
                 candidates.add(v);
             }
@@ -226,7 +222,7 @@ public class SimpleACOClique {
             }
 
             int degree = 0;
-            for (int j = 1; j <= g.vertices; j++) {
+            for (int j = 0; j < g.vertices; j++) {
                 if (g.edges[v][j]) degree++;
             }
 
@@ -248,7 +244,7 @@ public class SimpleACOClique {
             }
         }
 
-        return candidates.get(candidates.size() - 1);
+        return candidates.getLast();
     }
 
     private static void depositPheromone(Graph g, double[][] pheromone, List<Integer> clique, int bestSize) {
@@ -256,8 +252,8 @@ public class SimpleACOClique {
         double delta = 1.0 / (1 + gap);
 
         if (clique.size() == 1) {
-            int u = clique.get(0);
-            for (int v = 1; v <= g.vertices; v++) {
+            int u = clique.getFirst();
+            for (int v = 0; v < g.vertices; v++) {
                 if (g.edges[u][v]) {
                     pheromone[u][v] = Math.min(pheromone[u][v] + delta, TAU_MAX);
                     pheromone[v][u] = pheromone[u][v];
