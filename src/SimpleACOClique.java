@@ -5,7 +5,7 @@ public class SimpleACOClique {
     // ======================
     // ADJUSTABLE PARAMETERS
     // ======================
-    private static final String FILE_PATH = "./problemy/c-fat200-2.clq.b";
+    private static String FILE_PATH = "./problemy/c-fat200-2.clq.b";
     private static final int MAX_CYCLES = 100;
     private static final int NUM_ANTS = 20;
     private static final double EVAPORATION = 0.5;
@@ -13,6 +13,7 @@ public class SimpleACOClique {
     private static final double BETA = 2.0;
     private static final double INIT_PHEROMONE = 1.0;
     private static final double TAU_MAX = 10.0;
+		private static int optimal = 12;
     // ======================
 
     static class Graph {
@@ -39,6 +40,14 @@ public class SimpleACOClique {
     }
 
     public static void main(String[] args) {
+			double optymalneRozw[] = {12.0, 24.0, 58.0, 14.0, 26.0, 64.0, 126.0};
+			String files[] = {"c-fat200-1.clq.b", "c-fat200-2.clq.b", "c-fat200-5.clq.b", 
+					"c-fat500-1.clq.b", "c-fat500-2.clq.b", "c-fat500-5.clq.b", "c-fat500-10.clq.b"};
+
+			for (int i = 0; i < files.length; i++) {
+					String fileName = files[i];
+					optimal = optymalneRozw[i];
+					FILE_PATH = ".\\problemy\\" + fileName;
         long start = System.currentTimeMillis();
         try {
             Graph graph = readGraph();
@@ -71,6 +80,7 @@ public class SimpleACOClique {
         } catch (IOException e) {
             System.err.println("File error: " + e.getMessage());
         }
+			}
     }
 
     private static Graph readGraph() throws IOException {
@@ -273,7 +283,9 @@ public class SimpleACOClique {
 
     private static void printResults(List<Integer> bestClique, Graph graph, long startTime) {
         System.out.println("\n=== FINAL RESULT ===");
-        System.out.println("Best clique size: " + bestClique.size());
+        System.out.println("Best clique size: " + bestClique.size() + " (" + 
+						(double) ((int) (((double) bestClique.size() / optimal) * 1000))
+						 / 1000 * 100 + "% of optimal)");
 
         // Sort the clique vertices for easier comparison
         List<Integer> sortedClique = new ArrayList<>(bestClique);
