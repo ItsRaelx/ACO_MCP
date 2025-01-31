@@ -9,17 +9,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class Main {
-    private static class Solution {
-        int size;
-        List<Integer> vertices;
-
-        Solution(int size, List<Integer> vertices) {
-            this.size = size;
-            this.vertices = vertices;
-            Collections.sort(this.vertices); // Sort vertices when creating solution
-        }
-    }
-
     public static void main(String[] args) {
         String benchmarksDir = "./benchmarks/";
         String solutionsDir = "./solutions/";
@@ -40,7 +29,6 @@ public class Main {
                             System.out.println("\n==============================================");
                             System.out.println("Przetwarzanie pliku: " + fileName);
                             System.out.println("Optymalna wielkość kliki: " + optimalSolution.size);
-                            System.out.println("Optymalne wierzchołki: " + optimalSolution.vertices);
 
                             // Uruchom algorytm ACO dla danego grafu
                             ACOClique aco = new ACOClique(benchmarkPath.toString());
@@ -51,21 +39,6 @@ public class Main {
                             System.out.println("Znaleziona wielkość kliki: " + result.size());
                             System.out.println("Znalezione wierzchołki: " + result);
                             System.out.println("Różnica od optymalnego: " + (optimalSolution.size - result.size()));
-
-                            // Porównaj wierzchołki
-                            List<Integer> missingVertices = new ArrayList<>(optimalSolution.vertices);
-                            missingVertices.removeAll(result);
-                            List<Integer> extraVertices = new ArrayList<>(result);
-                            extraVertices.removeAll(optimalSolution.vertices);
-
-                            if (!missingVertices.isEmpty()) {
-                                Collections.sort(missingVertices); // Sort missing vertices
-                                System.out.println("Brakujące wierzchołki: " + missingVertices);
-                            }
-                            if (!extraVertices.isEmpty()) {
-                                Collections.sort(extraVertices); // Sort extra vertices
-                                System.out.println("Dodatkowe wierzchołki: " + extraVertices);
-                            }
 
                         } catch (IOException e) {
                             System.err.println("Błąd podczas przetwarzania pliku: " + fileName);
@@ -94,6 +67,17 @@ public class Main {
                 }
             }
             return new Solution(size, vertices); // Vertices will be sorted in constructor
+        }
+    }
+
+    private static class Solution {
+        int size;
+        List<Integer> vertices;
+
+        Solution(int size, List<Integer> vertices) {
+            this.size = size;
+            this.vertices = vertices;
+            Collections.sort(this.vertices); // Sort vertices when creating solution
         }
     }
 }

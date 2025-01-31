@@ -38,6 +38,7 @@ public class GraphReader {
             // Utwórz i wypełnij graf
             graph = new Graph(vertices);
 
+            //System.out.println("DEBUG: Starting to read edges");
             // Wczytaj macierz sąsiedztwa
             for (int i = 0; i < vertices; i++) {
                 int numBytes = (i + 8) / 8;
@@ -55,9 +56,12 @@ public class GraphReader {
 
                     if (hasEdge) {
                         graph.addEdge(i, j);
+                        //System.out.println("DEBUG: Added edge between " + i + " and " + j);
+                        //if (i==0 || j==0) System.out.println("DEBUG: Added edge between " + i + " and " + j);
                     }
                 }
             }
+            //System.out.println("DEBUG: Finished reading edges");
         }
         return graph;
     }
