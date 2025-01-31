@@ -3,10 +3,10 @@ import java.util.*;
 
 public class ACOClique {
     // Parametry algorytmu ACO
-    private static final int NUM_ANTS = 20;
+    private static final int NUM_ANTS = 30;
     private static final double TAU_MAX = 6.0;
     private static final double TAU_MIN = 0.01;
-    private static final double RHO = 0.5;
+    private static final double RHO = 0.99;
     private static final int MAX_ITERATIONS = 100;
 
     private final Graph graph;

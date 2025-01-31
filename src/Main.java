@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class Main {
+    private static final int NUM_RUNS = 10;
+
     public static void main(String[] args) {
         String benchmarksDir = "./benchmarks/";
         String solutionsDir = "./solutions/";
@@ -30,15 +32,38 @@ public class Main {
                             System.out.println("Przetwarzanie pliku: " + fileName);
                             System.out.println("Optymalna wielkość kliki: " + optimalSolution.size);
 
-                            // Uruchom algorytm ACO dla danego grafu
-                            ACOClique aco = new ACOClique(benchmarkPath.toString());
-                            List<Integer> result = aco.solve();
-                            Collections.sort(result); // Sort the result vertices
+                            // Przeprowadź 10 uruchomień
+                            double totalRelativeError = 0.0;
+                            int bestSize = 0;
+                            List<Integer> bestResult = null;
 
-                            // Wyświetl wyniki i porównaj z optymalnym rozwiązaniem
-                            System.out.println("Znaleziona wielkość kliki: " + result.size());
-                            System.out.println("Znalezione wierzchołki: " + result);
-                            System.out.println("Różnica od optymalnego: " + (optimalSolution.size - result.size()));
+                            for (int i = 0; i < NUM_RUNS; i++) {
+                                ACOClique aco = new ACOClique(benchmarkPath.toString());
+                                List<Integer> result = aco.solve();
+                                Collections.sort(result);
+
+                                // Oblicz błąd względny dla tego uruchomienia
+                                double relativeError = calculateRelativeError(optimalSolution.size, result.size());
+                                totalRelativeError += relativeError;
+
+                                // Zapisz najlepszy wynik
+                                if (result.size() > bestSize) {
+                                    bestSize = result.size();
+                                    bestResult = new ArrayList<>(result);
+                                }
+
+                                System.out.printf("Uruchomienie %d: Rozmiar=%d, Błąd względny=%.2f%%%n",
+                                        i + 1, result.size(), relativeError * 100);
+                            }
+
+                            // Oblicz średni błąd względny
+                            double averageRelativeError = totalRelativeError / NUM_RUNS;
+
+                            System.out.println("\nPodsumowanie:");
+                            System.out.println("Średni błąd względny: " + String.format("%.2f%%", averageRelativeError * 100));
+                            System.out.println("Najlepszy znaleziony rozmiar: " + bestSize);
+                            System.out.println("Najlepsze znalezione wierzchołki: " + bestResult);
+                            System.out.println("Różnica od optymalnego: " + (optimalSolution.size - bestSize));
 
                         } catch (IOException e) {
                             System.err.println("Błąd podczas przetwarzania pliku: " + fileName);
@@ -49,6 +74,10 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static double calculateRelativeError(int optimal, int found) {
+        return Math.abs(optimal - found) / (double) optimal;
     }
 
     private static Solution readOptimalSolution(Path solutionPath) throws IOException {
@@ -66,7 +95,7 @@ public class Main {
                     vertices.add(Integer.parseInt(parts[parts.length - 1]));
                 }
             }
-            return new Solution(size, vertices); // Vertices will be sorted in constructor
+            return new Solution(size, vertices);
         }
     }
 
@@ -77,7 +106,7 @@ public class Main {
         Solution(int size, List<Integer> vertices) {
             this.size = size;
             this.vertices = vertices;
-            Collections.sort(this.vertices); // Sort vertices when creating solution
+            Collections.sort(this.vertices);
         }
     }
 }
